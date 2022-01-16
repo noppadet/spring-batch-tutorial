@@ -1,6 +1,8 @@
 package com.lab.demo.config;
 
 
+import com.lab.demo.listener.BatchJobListener;
+import com.lab.demo.listener.BatchStepListener;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -20,22 +22,19 @@ public class BatchConfig {
     private JobBuilderFactory jos;
     @Autowired
     private StepBuilderFactory steps;
+    @Autowired
+    private BatchJobListener batchJobListener;
+    @Autowired
+    private BatchStepListener batchStepListener;
 
 
     public Step step1(){
         return steps.get("step1")
+                .listener(batchStepListener)
                 .tasklet(helloworldTasklet())
                 .build();
     }
 
-    //    private Tasklet helloworldTasklet() {
-//        return new Tasklet() {
-//            @Override
-//            public RepeatStatus execute(StepContribution stepContribution, ChunkContext chunkContext) throws Exception {
-//                return null;
-//            }
-//        }
-//    }
     private Tasklet helloworldTasklet() {
         return (stepContribution, chunkContext) -> {
             System.out.println("hello world");
@@ -44,6 +43,6 @@ public class BatchConfig {
     }
     @Bean
     public Job helloworldJob(){
-        return jos.get("helloworldJossss").start(step1()).build();
+        return jos.get("helloworldJossss").listener(batchJobListener).start(step1()).build();
     }
 }
